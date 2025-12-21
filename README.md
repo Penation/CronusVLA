@@ -56,9 +56,9 @@ https://github.com/user-attachments/assets/814fb943-a913-46fb-ada5-1efbbb4d3a20
 - Introduction of **SimplerEnv-OR**, a novel benchmark for quantitative evaluation of model robustness under observational disturbances.
 
 
-<div align="center">
+<!-- <div align="center">
   <img src="./asset/Nteaser.png" alt="framework" width="80%">
-</div>
+</div> -->
 
 ---
 ## 📋 Contents
