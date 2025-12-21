@@ -40,6 +40,9 @@
 </p>
 
 
+https://github.com/user-attachments/assets/f74ea0fa-3731-4c82-a891-996a7950d6ec
+
+
 ## 🔥 Overview <a id="overview"></a>
 
 **CronusVLA** is a general framework that extends **single-frame VLA models** to the **multi-frame paradigm** through a two-stage design. It achieves:
