@@ -40,10 +40,7 @@
 </p>
 
 
-
-https://github.com/user-attachments/assets/de3064e5-916d-4dae-9483-6b688ace2b9d
-
-
+https://github.com/user-attachments/assets/e54c43a6-f8f2-4f92-99c4-3fc7a7364592
 
 
 ## 🔥 Overview <a id="overview"></a>
