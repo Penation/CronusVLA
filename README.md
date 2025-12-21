@@ -34,7 +34,10 @@
   <a href="https://github.com/LiHaoHN/SimX-OR">
     <img src="https://img.shields.io/badge/SimplerEnv_OR-%F0%9F%8F%86-red" alt="Benchmark">
   </a>
-  <a href="https://github.com/user-attachments/assets/230481e1-7105-4ed7-9a58-d7af4713e044">
+  <a href="./asset/poster.pdf">
+    <img src="https://img.shields.io/badge/Poster-PDF-purple" alt="Poster">
+  </a>
+  <a href="https://github.com/user-attachments/assets/814fb943-a913-46fb-ada5-1efbbb4d3a20">
     <img src="https://img.shields.io/badge/DemoVideo-%F0%9F%8E%AC-red" alt="Demo Video">
   </a>
 </p>
@@ -107,10 +110,16 @@ pip install flash-attn==2.5.5 --no-build-isolation
 pip install -r requirements.txt
 ```
 
-### BridgeData V2 WidowX (Evaluation) <a id="real_WidowX"></a>
-The related experiments are in `./experiments/real_widowx`. Our repo support both [CronusVLA-7B](https://huggingface.co/JeasLee/cronusvla_7B_bridge_rt_1) & [-0.5B](https://huggingface.co/JeasLee/cronusvla_0.5B_bridge_rt_1) on real-world WidowX robot. Please follow [OpenVLA](https://github.com/openvla/openvla#setup) setup guide to install `widowx_envs` environments.
+<a id="real_WidowX"></a>
+<details>
+<summary><strong><span style="font-size: 1.2em;">BridgeData V2 WidowX (Evaluation)</span></strong></summary>
 
-### SimplerEnv (Evaluation)
+The related experiments are in `./experiments/real_widowx`. Our repo support both [CronusVLA-7B](https://huggingface.co/JeasLee/cronusvla_7B_bridge_rt_1) & [-0.5B](https://huggingface.co/JeasLee/cronusvla_0.5B_bridge_rt_1) on real-world WidowX robot. Please follow [OpenVLA](https://github.com/openvla/openvla#setup) setup guide to install `widowx_envs` environments.
+</details>
+
+<details>
+<summary><strong><span style="font-size: 1.2em;">SimplerEnv (Evaluation)</span></strong></summary>
+
 The SimplerEnv experiments are located in `./experiments/SimplerEnv`.
 
 1. Clone the [ManiSkill2\_real2sim](https://github.com/simpler-env/ManiSkill2_real2sim) repository under `./experiments/SimplerEnv`.
@@ -133,8 +142,11 @@ pip install -e .
 # Install Vulkan runtime libraries and tools
 conda install conda-forge::libvulkan-loader
 ```
+</details>
 
-### LIBERO Environment (Evaluation)
+<details>
+<summary><strong><span style="font-size: 1.2em;">LIBERO Environment (Evaluation)</span></strong></summary>
+
 The LIBERO experiments are located in `./experiments/Libero`.
 
 >***⚠️ Note***: LIBERO dependencies differ from the training environment. We recommend creating a separate environment for LIBERO evaluation.
@@ -155,8 +167,11 @@ Install additional requirements:
 cd deploy/libero
 pip install -r libero_requirements.txt
 ```
+</details>
 
-### Real-world Franka (Evaluation)
+<details>
+<summary><strong><span style="font-size: 1.2em;">Real-world Franka (Evaluation)</span></strong></summary>
+
 The Franka evaluation setup is in `./experiments/real_franka`.
 - Client side: only requires a Python environment and the ``requests`` library, 
 ```bash
@@ -169,6 +184,8 @@ pip install flask
 ```
 
 Dependencies for the Franka robot can follow this [repo](https://github.com/iamlab-cmu/frankapy). 
+</details>
+
 
 ---
 
@@ -188,17 +205,6 @@ cd <PATH TO BASE DATASETS DIR>
 # Download the full dataset (124 GB)
 wget -r -nH --cut-dirs=4 --reject="index.html*" https://rail.eecs.berkeley.edu/datasets/bridge_release/data/tfds/bridge_dataset/
 ```
-
-
-
-### Finetuning Data
-We mainly finetune CronusVLA on [LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO) and our customed data ([script example](https://github.com/InternRobotics/InstructVLA/tree/main/data_pipeline/real_data_script)):
-
-- LIBERO datasets, including LIBERO-Spatial, -Object, -Goal, and -10 (-Long), can be downloaded in RLDS format (~10 GB total) from this [link](https://huggingface.co/datasets/openvla/modified_libero_rlds). The corresponding suit names of [mixtures.py](./prismatic/vla/datasets/rlds/oxe/mixtures.py) is `libero_spatial_no_noops`, `libero_object_no_noops`, `libero_goal_no_noops`, `libero_10_no_noops`.
-
-- If you have a custom dataset that is not part of OXE, you can convert the dataset to the RLDS format (see [this repo](https://github.com/kpertsch/rlds_dataset_builder)). The corresponding suit of [mixtures.py](./prismatic/vla/datasets/rlds/oxe/mixtures.py) is `custom`.
-
-- Ensure that `--run_root_dir` points to the directory containing your LIBERO/Custom datasets.
 
 ### Pretrained Weights <a id="Pretrained_Weights"></a>
 1. Create an empty folder named `./outputs`, we mainly provide post-trained and finetuned checkpoints. The pretrained 7B checkpoints can be downloaded [here](https://huggingface.co/openvla/openvla-7b-prismatic), and more checkpoints will be released soon at this [page](https://huggingface.co/JeasLee/models).
@@ -220,6 +226,18 @@ mkdir -p outputs
 |                    | [cronusvla_7B_libero_object_w_wrist🤗](https://huggingface.co/JeasLee/cronusvla_7B_libero_object_w_wrist) | finetuned on LIBERO-Object dataset (step=4, action chunk=8). | similar setup as above |
 |                    | [cronusvla_7B_libero_goal_w_wrist🤗](https://huggingface.co/JeasLee/cronusvla_7B_libero_goal_w_wrist) | finetuned on LIBERO-Goal dataset (step=2, action chunk=8). | similar setup as above |
 |                    | [cronusvla_7B_libero_10_w_wrist🤗](https://huggingface.co/JeasLee/cronusvla_7B_libero_10_w_wrist) | finetuned on LIBERO-10 dataset (step=2, action chunk=8). | similar setup as above |
+
+<details>
+<summary><strong><span style="font-size: 1.2em;">Finetuning Data</span></strong></summary>
+
+We mainly finetune CronusVLA on [LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO) and our customed data ([script example](https://github.com/InternRobotics/InstructVLA/tree/main/data_pipeline/real_data_script)):
+
+- LIBERO datasets, including LIBERO-Spatial, -Object, -Goal, and -10 (-Long), can be downloaded in RLDS format (~10 GB total) from this [link](https://huggingface.co/datasets/openvla/modified_libero_rlds). The corresponding suit names of [mixtures.py](./prismatic/vla/datasets/rlds/oxe/mixtures.py) is `libero_spatial_no_noops`, `libero_object_no_noops`, `libero_goal_no_noops`, `libero_10_no_noops`.
+
+- If you have a custom dataset that is not part of OXE, you can convert the dataset to the RLDS format (see [this repo](https://github.com/kpertsch/rlds_dataset_builder)). The corresponding suit of [mixtures.py](./prismatic/vla/datasets/rlds/oxe/mixtures.py) is `custom`.
+
+- Ensure that `--run_root_dir` points to the directory containing your LIBERO/Custom datasets.
+</details>
 
 ---
 ## 📊 Evaluating CronusVLA <a id="Evaluating"></a>
@@ -274,7 +292,8 @@ print(actions)
 ``` 
 We also support **chunked execution** and **ensembled execution**, as shown in [super_deploy.py](experiments/real_franka/super_deploy.py). For adaptive action ensemble strategy, please refer to [adaptive_ensemble.py](vla/adaptive_ensemble.py) for implementation details.
 
-### BridgeData V2 WidowX Evaluations
+<details>
+<summary><strong><span style="font-size: 1.2em;">BridgeData V2 WidowX Evaluations</span></strong></summary>
 
 There are several ways to run BridgeData V2 evaluations, here, we describe the server-client approach, following the [OpenVLA instructions](https://github.com/openvla/openvla#launching-bridgedata-v2-evaluations).
 
@@ -297,8 +316,10 @@ Ensuring [CronusVLA-7B](https://huggingface.co/JeasLee/cronusvla_7B_bridge_rt_1)
 ```bash
 bash ./script/eval_real_widowx/deploy.sh
 ```
+</details>
 
-### SimplerEnv Evaluation
+<details>
+<summary><strong><span style="font-size: 1.2em;">SimplerEnv Evaluation</span></strong></summary>
 
 We provide several evaluation scripts in `./script/eval_simplerenv`. In the original version of SimplerEnv, the model is reloaded between evaluation tasks. To speed up evaluation, we repack the model as an independent server so that checkpoints only load once for all tasks (on both Google Robot and Bridge). 
 
@@ -352,8 +373,11 @@ bash ./script/eval_simplerenv/kill_unfinished.sh
 <div align="center">
   <img src="./asset/simplerenv_1.png" alt="framework" width="95%">
 </div>
+</details>
 
-### LIBERO Evaluation
+<details>
+<summary><strong><span style="font-size: 1.2em;">LIBERO Evaluation</span></strong></summary>
+
 We provide evaluation scripts for all LIBERO configurations in `script/eval_libero` and `script/eval_libero_w_wrist`. For example, in the settings of libero goal :
  - `libero_goal.sh`: Default configuration for an 8-GPU node. You can modify `CUDA_DEVICES` to specify which GPUs to use — the script automatically distributes checkpoints in `CHECKPOINT_DIR` across devices. The argument `--task_suite_name` should be chosen from {`libero_spatial`, `libero_object`, `libero_goal`, `libero_10`}. The flag `--use_wrist_image` specifies whether to use the wrist-view image (defalut: Fasle). 
  - `libero_goal_retrials.sh`: Used for mutilple trials with different random seed, you can modified `CUDA_DEVICES`, and set the same checkpoint N times in `CHECKPOINT_DIR`. The argument `--seed` is automatically assigned.
@@ -401,11 +425,16 @@ wait
 <div align="center">
   <img src="./asset/libero_1_1.png" alt="framework" width="95%">
 </div>
+</details>
 
-### SimplerEnv-OR Evaluation
+<details>
+<summary><strong><span style="font-size: 1.2em;">SimplerEnv-OR Evaluation</span></strong></summary>
+
 We provide detailed instruction and codebase in the [SimX-OR](https://github.com/LiHaoHN/SimX-OR) repository.
+</details>
 
-### Real-world Franka Evaluation
+<details>
+<summary><strong><span style="font-size: 1.2em;">Real-world Franka Evaluation</span></strong></summary>
 
 We provide deployment scripts for both server and client in `script/real_franka`. For your own environment or robot, please first collect the corresponding real-world operation data (e.g., using teleoperation), and then use the data to fine-tune the post-pretrained model.
 
@@ -469,6 +498,7 @@ while True:
                     print(f"Request failed: {e}")
                     continue
 ```
+</details>
 
 ---
 ## 💪 Training CronusVLA <a id="Training"></a>
