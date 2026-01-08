@@ -34,7 +34,7 @@
   <a href="https://github.com/LiHaoHN/SimX-OR">
     <img src="https://img.shields.io/badge/SimplerEnv_OR-%F0%9F%8F%86-red" alt="Benchmark">
   </a>
-  <a href="./asset/poster.pdf">
+  <a href="./poster/CronusVLA_poster.pdf">
     <img src="https://img.shields.io/badge/Poster-PDF-purple" alt="Poster">
   </a>
   <a href="https://github.com/user-attachments/assets/814fb943-a913-46fb-ada5-1efbbb4d3a20">
