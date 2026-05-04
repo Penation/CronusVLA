@@ -5,6 +5,7 @@ HuggingFace-style configuration definition for Prismatic VLMs, inheriting from `
 Default configuration specifies `siglip-224px+7b`.
 """
 
+import os
 from typing import Any, Dict, List, Optional
 
 from transformers import PretrainedConfig
@@ -45,7 +46,8 @@ TIMM_OVERRIDE_ACT_LAYER: Dict[str, List[Optional[str]]] = {
 }
 
 LLM_BACKBONE_TO_HF_PATH = {
-    "llama2-7b-pure": "meta-llama/Llama-2-7b-hf", "llama2-13b-pure": "meta-llama/Llama-2-13b-hf",
+    "llama2-7b-pure": os.environ.get("CRONUSVLA_LLAMA2_7B_HF_HUB_PATH", "NousResearch/Llama-2-7b-hf"),
+    "llama2-13b-pure": "meta-llama/Llama-2-13b-hf",
     "llama2-7b-chat": "meta-llama/Llama-2-7b-chat-hf", "llama2-13b-chat": "meta-llama/Llama-2-13b-chat-hf",
 
     "vicuna-v15-7b": "lmsys/vicuna-7b-v1.5", "vicuna-v15-13b": "lmsys/vicuna-13b-v1.5",

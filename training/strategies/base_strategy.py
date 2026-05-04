@@ -281,6 +281,7 @@ class TrainingStrategy(ABC):
             disable=not overwatch.is_rank_zero(),
         ) as progress:
             self.vlm.train()
+            last_saved_epoch = 0
 
             # Zero Gradients (just in case)
             if self.vlm.use_ema is not None and self.vlm.use_ema == True:
@@ -342,6 +343,14 @@ class TrainingStrategy(ABC):
                     metrics.commit(update_step_time=True, global_step=metrics.global_step + 1, epoch=epoch, lr=self.lr_scheduler.get_last_lr()[0])
                     status = metrics.push()
 
+                    # When training by epochs, save once after each completed epoch boundary.
+                    if self.max_steps is None and epoch > last_saved_epoch:
+                        self.save_checkpoint(
+                            metrics.run_dir, metrics.global_step, epoch, loss.item(), only_trainable=not save_full_model
+                        )
+                        dist.barrier()
+                        last_saved_epoch = epoch
+
                     # Check for Save Interval or Max Steps & Save Checkpoint
                     if (terminate := (self.max_steps is not None and metrics.global_step >= self.max_steps)) or (
                         (metrics.global_step % save_interval) == 0 and (epoch > 0 or metrics.global_step >= 15000)
@@ -357,3 +366,7 @@ class TrainingStrategy(ABC):
                 # Update Progress Bar
                 progress.update()
                 progress.set_description(status)
+
+            if self.max_steps is None and last_saved_epoch < self.epochs:
+                self.save_checkpoint(metrics.run_dir, metrics.global_step, self.epochs, loss.item(), only_trainable=not save_full_model)
+                dist.barrier()

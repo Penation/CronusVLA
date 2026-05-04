@@ -9,6 +9,7 @@ import math
 from collections import OrderedDict
 from functools import partial
 from pathlib import Path
+import shutil
 from typing import Callable, Optional, Union
 
 import torch
@@ -139,6 +140,10 @@ class FSDPStrategy(TrainingStrategy):
 
                 # Save Checkpoint & Copy Latest to `latest-checkpoint.pt`
                 torch.save({"model": model_state_dicts}, checkpoint_path)
+                for config_name in ("config.yaml", "config.json"):
+                    config_path = run_dir / config_name
+                    if config_path.exists():
+                        shutil.copy2(config_path, checkpoint_dir / f"{checkpoint_path.stem}.{config_name}")
 
             del full_vlm_state_dict, model_state_dicts
             torch.cuda.empty_cache()
@@ -164,8 +169,7 @@ class FSDPStrategy(TrainingStrategy):
 
     def _get_optimizer_path(self, checkpoint_path: Path) -> Path:
         """Get the path to the optimizer checkpoint file."""
-        # return checkpoint_path.with_suffix(".optimizer")
-        return checkpoint_path.with_name("tmp.optimizer")
+        return checkpoint_path.with_suffix(".optimizer.pt")
 
     def load_optimizer_and_scheduler(self, checkpoint_path: str) -> None:
         """Load a checkpoint from the specified `checkpoint_path`."""

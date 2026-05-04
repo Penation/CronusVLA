@@ -685,11 +685,14 @@ OXE_DATASET_CONFIGS = {
         "action_encoding": ActionEncoding.EEF_POS,
     },
     ### Custom Finetuning Datasets
+    # The CALVIN ABCD TFDS export under `/Data/rlds_raw/task_ABC_D/calvin_abc_tfds`
+    # uses the `custom_finetuning` dataset name for compatibility, but its proprio
+    # fields are EEF XYZ + RPY (`eef_state`) and scalar gripper opening (`gripper_state`).
     "custom_finetuning": {
         "image_obs_keys": {"primary": "image", "secondary": None, "wrist": None},
         "depth_obs_keys": {"primary": "depth", "secondary": None, "wrist": None},
-        "state_obs_keys": ["base_pose_tool_reached", "gripper_closed"],
-        "state_encoding": StateEncoding.POS_QUAT,
+        "state_obs_keys": ["eef_state", None, "gripper_state"],
+        "state_encoding": StateEncoding.POS_EULER,
         "action_encoding": ActionEncoding.EEF_POS,
     },
 }
