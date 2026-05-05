@@ -342,6 +342,8 @@ class TrainingStrategy(ABC):
                     # Push Metrics
                     metrics.commit(update_step_time=True, global_step=metrics.global_step + 1, epoch=epoch, lr=self.lr_scheduler.get_last_lr()[0])
                     status = metrics.push()
+                    progress.update()
+                    progress.set_description(status)
 
                     # When training by epochs, save once after each completed epoch boundary.
                     if self.max_steps is None and epoch > last_saved_epoch:
@@ -362,10 +364,6 @@ class TrainingStrategy(ABC):
 
                     if terminate:
                         return
-
-                # Update Progress Bar
-                progress.update()
-                progress.set_description(status)
 
             if self.max_steps is None and last_saved_epoch < self.epochs:
                 self.save_checkpoint(metrics.run_dir, metrics.global_step, self.epochs, loss.item(), only_trainable=not save_full_model)
