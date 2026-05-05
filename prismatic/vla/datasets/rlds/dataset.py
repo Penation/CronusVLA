@@ -7,7 +7,6 @@ Core interface script for configuring and initializing RLDS datasets.
 import copy
 import inspect
 import json
-import os
 from functools import partial
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
@@ -33,39 +32,8 @@ from prismatic.vla.datasets.rlds.utils.data_utils import (
 overwatch = initialize_overwatch(__name__)
 
 
-def _get_env_int(name: str) -> Optional[int]:
-    value = os.environ.get(name)
-    if value is None or value == "":
-        return None
-
-    try:
-        parsed = int(value)
-    except ValueError as exc:
-        raise ValueError(f"Environment variable `{name}` must be an integer, got `{value}`") from exc
-
-    if parsed <= 0:
-        raise ValueError(f"Environment variable `{name}` must be > 0, got `{parsed}`")
-
-    return parsed
-
-
 # Configure Tensorflow with *no GPU devices* (to prevent clobber with PyTorch)
 tf.config.set_visible_devices([], "GPU")
-
-tf_interop_threads = _get_env_int("CRONUSVLA_TF_NUM_INTEROP_THREADS")
-if tf_interop_threads is not None:
-    tf.config.threading.set_inter_op_parallelism_threads(tf_interop_threads)
-
-tf_intraop_threads = _get_env_int("CRONUSVLA_TF_NUM_INTRAOP_THREADS")
-if tf_intraop_threads is not None:
-    tf.config.threading.set_intra_op_parallelism_threads(tf_intraop_threads)
-
-if tf_interop_threads is not None or tf_intraop_threads is not None:
-    overwatch.info(
-        "TensorFlow threading config => inter_op=%s, intra_op=%s",
-        tf_interop_threads if tf_interop_threads is not None else "default",
-        tf_intraop_threads if tf_intraop_threads is not None else "default",
-    )
 
 
 # ruff: noqa: B006

@@ -7,7 +7,6 @@ functions, and initialization logic.
 Training Strategies (DDP, FSDP-Grad, FSDP-Full) tend to have a lot of repeated components; this class does a lot of
 heavy lifting.
 """
-import os
 import torch  
 import torchvision.transforms.functional as TF
 import torch.distributed as dist
@@ -44,14 +43,6 @@ def update_ema(ema_model, model, decay=0.9999):
 
 # Initialize Overwatch =>> Wraps `logging.Logger`
 overwatch = initialize_overwatch(__name__)
-
-
-def _env_flag(name: str, default: bool = False) -> bool:
-    value = os.environ.get(name)
-    if value is None:
-        return default
-
-    return value.strip().lower() not in {"0", "false", "no", "off"}
 
 
 # === Abstract Base Class for an arbitrary Training Strategy ===
@@ -272,17 +263,14 @@ class TrainingStrategy(ABC):
         #assert self.grad_accumulation_steps == 1, "VLA training does not support gradient accumulation!"
 
         # Create a DataLoader =>> Set `num_workers` to 0; RLDS loader handles parallelism!
-        pin_memory = _env_flag("CRONUSVLA_DATALOADER_PIN_MEMORY", default=torch.cuda.is_available())
         dataloader = DataLoader(
             vla_dataset,
             batch_size=self.per_device_batch_size,
             sampler=None,
             collate_fn=collator,
             num_workers=0,
-            pin_memory=pin_memory,
             worker_init_fn=self.worker_init_fn,
         )
-        overwatch.info("VLA DataLoader config => num_workers=0, pin_memory=%s", pin_memory)
 
         # === Train ===
         status = metrics.get_status()
