@@ -5,6 +5,7 @@ Lightweight PyTorch Dataset Definition for wrapping RLDS TFDS Pipeline; just def
 format to OpenVLA, IterableDataset shim.
 """
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Tuple, Type
@@ -19,6 +20,7 @@ from transformers import LlamaTokenizerFast
 
 from prismatic.models.backbones.llm.prompting import PromptBuilder
 from prismatic.models.backbones.vision import ImageTransform
+from prismatic.overwatch import initialize_overwatch
 from prismatic.util.data_utils import tree_map
 from prismatic.vla.action_tokenizer import ActionTokenizer
 from prismatic.vla.datasets.rlds import make_interleaved_dataset, make_single_dataset
@@ -27,6 +29,23 @@ from prismatic.vla.datasets.rlds.utils.data_utils import NormalizationType
 
 # HuggingFace Default / LLaMa-2 IGNORE_INDEX (for labels)
 IGNORE_INDEX = -100
+overwatch = initialize_overwatch(__name__)
+
+
+def _get_env_int(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    if value is None or value == "":
+        return default
+
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise ValueError(f"Environment variable `{name}` must be an integer, got `{value}`") from exc
+
+    if parsed <= 0:
+        raise ValueError(f"Environment variable `{name}` must be > 0, got `{parsed}`")
+
+    return parsed
 
 
 @dataclass
@@ -159,6 +178,18 @@ class RLDSDataset(IterableDataset):
             load_language=True,
             action_proprio_normalization_type=NormalizationType.BOUNDS_Q99,
         )
+        cpu_count = os.cpu_count() or 8
+        default_frame_parallel_calls = min(32, cpu_count)
+        default_traj_threads = max(len(mixture_spec), min(8, cpu_count))
+        frame_parallel_calls = _get_env_int("CRONUSVLA_RLDS_FRAME_PARALLEL_CALLS", default_frame_parallel_calls)
+        traj_transform_threads = _get_env_int("CRONUSVLA_RLDS_TRAJ_TRANSFORM_THREADS", default_traj_threads)
+        traj_read_threads = _get_env_int("CRONUSVLA_RLDS_TRAJ_READ_THREADS", default_traj_threads)
+        overwatch.info(
+            "RLDS threading config => frame_parallel_calls=%d, traj_transform_threads=%d, traj_read_threads=%d",
+            frame_parallel_calls,
+            traj_transform_threads,
+            traj_read_threads,
+        )
         rlds_config = dict(
             traj_transform_kwargs=dict(
                 window_size=past_action_window_size + 1,                                    # If we wanted to feed / predict more than one step
@@ -168,14 +199,14 @@ class RLDSDataset(IterableDataset):
             ),
             frame_transform_kwargs=dict(
                 resize_size=resize_resolution,
-                num_parallel_calls=16,                          # For CPU-intensive ops (decoding, resizing, etc.)
+                num_parallel_calls=frame_parallel_calls,       # For CPU-intensive ops (decoding, resizing, etc.)
             ),
             dataset_kwargs_list=per_dataset_kwargs,
             shuffle_buffer_size=shuffle_buffer_size,
             sample_weights=weights,
             balance_weights=True,
-            traj_transform_threads=len(mixture_spec),
-            traj_read_threads=len(mixture_spec),
+            traj_transform_threads=traj_transform_threads,
+            traj_read_threads=traj_read_threads,
             train=train,
             load_all_data_for_training=load_all_data_for_training,
         )
