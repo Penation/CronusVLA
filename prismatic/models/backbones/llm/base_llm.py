@@ -12,6 +12,7 @@ We make this assumption to keep the LLM handling in this codebase relatively lig
 utilities around different types of decoding/generation strategies.
 """
 
+import os
 import warnings
 from abc import ABC, abstractmethod
 from functools import partial
@@ -99,6 +100,31 @@ class LLMBackbone(nn.Module, ABC):
 
 # === Abstract Base Class for Arbitrary HF Causal LLMs ===
 class HFCausalLLMBackbone(LLMBackbone, ABC):
+    @staticmethod
+    def _resolve_attention_backend(use_flash_attention_2: bool) -> Optional[str]:
+        forced_backend = os.environ.get("CRONUSVLA_ATTN_IMPLEMENTATION")
+        if forced_backend is not None:
+            forced_backend = forced_backend.strip().lower()
+            if forced_backend in {"", "auto", "default"}:
+                forced_backend = None
+            elif forced_backend not in {"flash_attention_2", "sdpa", "eager"}:
+                raise ValueError(
+                    f"Unsupported CRONUSVLA_ATTN_IMPLEMENTATION={forced_backend!r}; "
+                    "expected one of: flash_attention_2, sdpa, eager, auto"
+                )
+            else:
+                return forced_backend
+
+        if torch.cuda.is_available():
+            try:
+                device_names = [torch.cuda.get_device_name(i).upper() for i in range(torch.cuda.device_count())]
+            except Exception:
+                device_names = []
+            if any("B200" in name for name in device_names):
+                return "sdpa"
+
+        return "flash_attention_2" if use_flash_attention_2 else None
+
     def __init__(
         self,
         llm_backbone_id: str,
@@ -119,14 +145,30 @@ class HFCausalLLMBackbone(LLMBackbone, ABC):
         #   => Note: We're eschewing use of the AutoModel API so that we can be more explicit about LLM-specific details
         if not self.inference_mode:
             overwatch.info(f"Loading [bold]{llm_family}[/] LLM from [underline]`{hf_hub_path}`[/]", ctx_level=1)
+            attn_backend = self._resolve_attention_backend(
+                use_flash_attention_2=use_flash_attention_2 if not self.inference_mode else False
+            )
+            from_pretrained_kwargs = {
+                "token": hf_token,
+                # The following parameters are set to prevent `UserWarnings` from HF; we want greedy decoding!
+                "do_sample": False,
+                "temperature": 1.0,
+                "top_p": 1.0,
+            }
+            if attn_backend == "flash_attention_2":
+                from_pretrained_kwargs["use_flash_attention_2"] = True
+            elif attn_backend is not None:
+                from_pretrained_kwargs["attn_implementation"] = attn_backend
+                from_pretrained_kwargs["use_flash_attention_2"] = False
+
+            overwatch.info(
+                f"Resolved attention backend for [bold]{llm_family}[/] to "
+                f"[bold]{attn_backend or 'transformers-default'}[/]",
+                ctx_level=1,
+            )
             self.llm = llm_cls.from_pretrained(
                 hf_hub_path,
-                token=hf_token,
-                use_flash_attention_2=use_flash_attention_2 if not self.inference_mode else False,
-                # The following parameters are set to prevent `UserWarnings` from HF; we want greedy decoding!
-                do_sample=False,
-                temperature=1.0,
-                top_p=1.0,
+                **from_pretrained_kwargs,
             )
 
         # [Contract] `inference_mode` means we're loading from a pretrained checkpoint; no need to load base weights!
